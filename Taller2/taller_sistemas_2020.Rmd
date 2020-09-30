@@ -1,5 +1,5 @@
 ---
-title: "Análisis Numérico- nombres integrantes"
+title: "Análisis Numérico- Stiven Gonzalez"
 output:
   html_document:
     df_print: paged
