@@ -24,13 +24,41 @@ b. Evalue la matriz de transición para el método $\textbf{SOR}$  y de $Jacobi$
 
 
 ```{r,echo=T}
+#a. 
+n=4
+#La función eye nos permite crear una matriz identidad de dimensión indicada como parámetro
 D1<-eye(n, m = n)
+D1
+#La función ones genera una matriz de tamamño n, donde cada elemento es 1
 D2<-ones(n, m = n)
+D2
+#La función ones genera una matriz de tamamño n, donde cada elemento es 0
 D3<-zeros(n, m = n)
+D3
 A = matrix(c(-8.1, -7, 6.123, -2, -1, 4,
 -3, -1, 0, -1, -5, 0.6,
 -1, 0.33, 6, 1/2), nrow=4, byrow=TRUE)
 A
+
+
+#b.
+#Recordando que la matriz de Transición es T = -D^(-1)*(L + U)
+
+L = tril(A, k = -1, diag = FALSE)
+U = tril(A, k = 1, diag = FALSE)
+
+calcularDiagonal = function(A) {
+  A[
+    col(A) != row(A)
+  ] = 0
+  
+  return (A)
+}
+
+D = calcularDiagonal(A)
+
+matTran = (-solve(D))%*%(L+U)
+matTran
 ```
   
     
@@ -38,18 +66,54 @@ A
     
 Adicionalmente, verifique si A es simétrica, si A es diagonalmente dominante, justifique su respuesta   
 
+b. Utilice la función itersolve(A, b, tol , method = "Gauss-Seidel") y solucionar el sistema asociado a la matriz $A$ con:   $b=[1.45,3,5.12,-4]^{t}$ con una tolerancia de error de $1e^-8$    
+
+c. Genere las iteraciones del método de Jacobi, calcular error relativo para cada iteracion y comparar la solución con el método de Gauss-Seidel  
+d. Encuentre la matriz de transición y el radio espectral     
+
+
 ```{r, echo=T}
 A = matrix(c(-8.1, -7/4, 6.1, -2, -1, 4,
 -3, -1, 0, -1, -5, 0.6,
 -1, 1/3, 6, 1/2), nrow=4, byrow=TRUE)
 A
+
+U = A
+L = A
+U[lower.tri(U, diag=TRUE)] = 0
+L[upper.tri(L, diag = TRUE)] = 0
+A
+D = diag(diag(A))
+
+D
+U
+L
+
+#b. 
+vectB = matrix(c(1.45, 3, 5.12, -4.0), nrow = 4, ncol = 1, byrow = TRUE)
+res = itersolve(A, vectB, tol = 1e-9 , method = "Gauss-Seidel")
+res
+#c. 
+calculoJacobi <- function(A,b, x0, k)
+{
+  x_k = matrix(x0)
+  it = 0
+  while(it <= k)
+  {
+    inn = matrix(b-((L+U)%*%x_k))
+    D1 = (solve(D))
+    xk1 = D1%*%inn
+    cat("Error ",it," ",norm(xk1-x_k,"F")/norm(x_k),"\n")
+    x_k = xk1
+    it = it + 1
+  }
+  cat("Solucion a 5 iteraciones: ",x_k,"\n")
+}
+x0 = c(1,2,1,1)
+calculoJacobi(A, vectB, x0, 5)
+
 ```
   
-  b. Utilice la función itersolve(A, b, tol , method = "Gauss-Seidel") y solucionar el sistema asociado a la matriz $A$ con:   $b=[1.45,3,5.12,-4]^{t}$ con una tolerancia de error de $1e^-8$    
-
-c. Genere las iteraciones del método de Jacobi, calcular error relativo para cada iteracion y comparar la solución con el método de Gauss-Seidel  
-d. Encuentre la matriz de transición y el radio espectral     
-
 3. Sea el sistema $AX=b$ dados en ejercicio,y  con tol= e^-8        
  a. Implemente una función en R para que evalue las raíces del polinomio característico asociado a la matriz $A$    
  b. Use el teorema de convergencia para determinar cuál método iterativo es más favorable.  
@@ -66,19 +130,81 @@ A = matrix(c(4, -1, -1, -1, -1, 4,
 A
 b = c(1.11111, 5, 1.5,-2.33)
 b
+
+#a.
+polinomio = charpoly(A, info = TRUE)
+polinimio
+
+#b.
+#Se necesitan
+U = A
+L = A
+U[lower.tri(U, diag=TRUE)] = 0
+L[upper.tri(L, diag = TRUE)] = 0
+D = diag(diag(A))
+
+#Creamos una matriz diagonal de dimensión 4
+iden = diag(1, nrow = nrow(A))
+
+#Calculamos la inversa
+D1 = solve(D,iden)
+Tra = D1 %*% U
+Trb = (iden + (L %*% D1))
+
+Trb = solve(Trb, iden)
+
+#Analizando la convergencia y c.
+gau = Tra + Trb
+#Matriz de transición Gauss
+gau
+
+gauNorma = norm(gau, type = c("I"))
+#Convergencia para Gauss
+gauNorma
+
+jac = (-D1)%*%(L+U)
+#Matriz de transición Jacobi
+jac
+
+jacNorma = norm(jac, type = c("I"))
+#Convergencia para Gauss
+jacNorma
+
+#d. 
+#Solución usando método de Jacobi
+solJac = itersolve(A, b, method = "Jacobi")
+solJac
+#Solución usando método de Gauss-Seidel
+solGS = itersolve(A, b, tol = 1e-9 , method = "Gauss-Seidel")
+solGS
+#Solución usando método por defecto
+solDef = solve(A,b)
+solDef
+
+
+#Falta: f y g
+
 ```
 
 4. a. Pruebe el siguiente algoritmo con una matriz $A_{6}$, modifiquelo para que $a_{ii}=0$ para todo $i$  
 
 ```{r, echo=T}
-tril1 <- function(M, k = 0) {
-if (k == 0) {
-M[upper.tri(M, diag = FALSE)] <- 0
-} else {
-M[col(M) >= row(M) + k + 1] <- 0
+tril1 <- function(M, k)
+{
+  if (k != 0) {
+    M[!lower.tri(M, diag = TRUE)] = 0
+    M[!upper.tri(M, diag = TRUE)] = 0
+  } else {
+    M[col(M) == row(M) + k ] = 0
+  }
+  return(M)
 }
-return(M)
-}
+
+M = matrix(c(10,9,5,
+             9,8,3,
+             6,4,7), nrow = 3, byrow = TRUE)
+triSol<- tril1(M, 0)
+triSol
 ```
 
 
