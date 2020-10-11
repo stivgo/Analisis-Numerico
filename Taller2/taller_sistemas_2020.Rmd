@@ -14,6 +14,7 @@ Para la realización de los siguientes ejercicios instalar las librerias pracma,
 library(pracma)
 library(Matrix)
 library(Rlinsolve)
+library(BB)
 ```
 
 
@@ -132,8 +133,8 @@ b = c(1.11111, 5, 1.5,-2.33)
 b
 
 #a.
-polinomio = charpoly(A, info = TRUE)
-polinimio
+#polinomio = charpoly(A, info = TRUE)
+#polinimio
 
 #b.
 #Se necesitan
@@ -208,7 +209,73 @@ triSol
 ```
 
 
-5. Cree una función que cuente el número de multiplicaciones en el método directo de Gauss-Jordan, para resolver un sistema de $n$ ecuaciones y pruebelo para $n=5$    
+5. Cree una función que cuente el número de multiplicaciones en el método directo de Gauss-Jordan, para resolver un sistema de $n$ ecuaciones y pruebelo para $n=5$ 
+
+```{r}
+
+contarNumeroMultiplicaciones = function (A,b){
+  if(det(A)==0){
+    return("La matriz ingresada no tiene solución (determinante = 0)")    
+  }
+  contadorMult = 0
+  n = nrow(A)
+  M = cbind(A,b)
+  for (i in 1:(n-1)){
+    #Intercambio de filas en caso de que el valor de [i,i] sea igual a 0
+    if(M[i,i]==0){ 
+      filaIntercambiar = i
+      for(j in (i+1):n){
+        if (M[j, i] != 0){
+          filaIntercambiar = j
+          break
+        }
+      }
+      M[c(i, filaIntercambiar), ] = M[c(filaIntercambiar, i), ]
+    }
+    for (j in (i+1):n){
+      res = M[j,i]/M[i,i]
+      contadorMult = contadorMult + 1
+      for(k in i:(n+1)){
+        M[j, k] = M[j,k] - res * M[i,k]
+        contadorMult = contadorMult + 1
+      }
+    }
+  }
+  #Matriz diagonal superior
+  for (i in n:2){
+    for (j in (i-1):1){
+      res = M[j,i]/M[i,i]
+      contadorMult = contadorMult + 1
+      for(k in (n+1):(i)){
+        M[j, k] = M[j,k] - res * M[i,k]
+        contadorMult = contadorMult + 1
+      }
+    }
+  }
+  resultado = seq(1,n)
+  #Matriz unitaria
+  for(i in 1:n){
+    M[i,n+1] = M[i,n+1] / M[i,i]
+    M[i,i] = 1
+    contadorMult = contadorMult + 1
+    resultado[i] = M[i,n+1]
+  }
+  cat("Total de multiplicaciones : ", contadorMult, "\n")
+  return(resultado)
+  
+}
+
+A = matrix(c( 0, 5, 2, 9, 6,
+              2, 3, 8, -1, 2,
+              0, 1, 0, -4, 1,
+              7, 1, 0, -2, 3,
+              -4, 11, -4, 5, -4), 
+           nrow=5, byrow=TRUE)
+b = c(2, 6, -9, 7, 80)
+cat(contarNumeroMultiplicaciones(A,b),"\n")
+
+```
+
 
 6. Dado el siguiente sistema: 
 
@@ -221,10 +288,32 @@ $-x+y+ \alpha$$z=1$
 a. Encuentre el valor de $\alpha$ y $\beta$ para asegura la convergencia por el método de Jacobi y para Gauss Seidel. Sugerencia: utilice el teorema convergencia      
 b. Genere una tabla que tenga 10 iteraciones, del método de Jacobi con vector inicial $x_{0}=[1,2,3]^t$      
 
-7. Instalar el paquete Matrix y descomponga la matriz $A$ (del punto dos) de la forma $LU$ y la factorizarla como $A=QR$. Verifique su respuesta.  
+7. Instalar el paquete Matrix y descomponga la matriz $A$ (del punto dos) de la forma $LU$ y la factorizarla como $A=QR$. Verifique su respuesta. 
 
-8. Realice varias pruebas que la matriz de transición por el método de Gauss-Seidel esta dada por $T=(-D^{-1}U)(I+LD^{-1})^{-1}$    
+```{r}
+A = matrix(c(-8.1, -7, 6.123, -2,
+             -1, 4,-3, -1,
+             0, -1, -5, 0.6,
+             -1, 0.33, 6, 1/2), nrow=4, byrow=TRUE)
 
+
+res = qr(A)
+q = qr.Q(res)
+r = qr.R(res)
+Ap = q %*% r
+
+cat("Resultado q * r = \n")
+Ap
+cat("Matriz A\n")
+A
+```
+
+8. Realice varias pruebas que la matriz de transición por el método de Gauss-Seidel esta dada por $T=(-D^{-1}U)(I+LD^{-1})^{-1}$   
+
+```{r}
+
+
+```
 
 ### Sistemas No lineales  
 9.
