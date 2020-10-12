@@ -134,7 +134,7 @@ b
 
 #a.
 polinomio = charpoly(A, info = TRUE)
-polinimio
+polinomio
 
 #b.
 #Se necesitan
