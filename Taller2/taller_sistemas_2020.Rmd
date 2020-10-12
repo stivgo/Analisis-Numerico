@@ -405,12 +405,12 @@ funciones = function(x){
 
 puntoI = c(1,1)
 sol=BBsolve(par=puntoI, fn=funciones)
-cat("Solución al punto (1,1)\n")
-sol
+print("Solución al punto (1,1)\n")
+print(sol)
 puntoII =c(-1,-1)
 sol1=BBsolve(par=puntoII, fn=funciones)
-cat("Solución al punto (-1,-1)\n")
-sol1
+print("Solución al punto (-1,-1)\n")
+print(sol1)
 
 
 x1=c(-2,-1,0,1,2)
